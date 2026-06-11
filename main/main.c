@@ -9,6 +9,7 @@
 
 #include "wifi_manager.h"
 #include "mqtt_manager.h"
+#include "sht31.h"
 
 static const char *TAG = "main";
 
@@ -73,15 +74,18 @@ void app_main(void)
         return;
     }
 
+    sht31_init();
+
     /* Publish Home Assistant discovery config once at startup. */
     mqtt_manager_publish_config(&temp_sensor);
     mqtt_manager_publish_config(&hum_sensor);
 
+    float temp;
+    float hum;
     while (true) {
         /* TODO: odczyt z DHT11 — na razie hardkodowane wartości. */
-        float temp = 23.5f;
-        float hum = 50.0f;
 
+        sht31_measure(&temp, &hum);
         mqtt_measurement_t measurements[] = {
             { &temp_sensor, temp },
             { &hum_sensor, hum },

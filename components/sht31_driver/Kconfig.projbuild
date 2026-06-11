@@ -1,0 +1,46 @@
+menu "SHT31 driver"
+
+    config SHT31_I2C_PORT
+        int "I2C port number"
+        range 0 1
+        default 0
+        help
+            I2C port (controller) the SHT31 sensor is connected to.
+
+    config SHT31_I2C_SDA_GPIO
+        int "I2C SDA GPIO number"
+        range 0 48
+        default 21
+        help
+            GPIO number used for the I2C SDA line.
+
+    config SHT31_I2C_SCL_GPIO
+        int "I2C SCL GPIO number"
+        range 0 48
+        default 22
+        help
+            GPIO number used for the I2C SCL line.
+
+    config SHT31_I2C_FREQ_HZ
+        int "I2C clock frequency (Hz)"
+        range 1000 1000000
+        default 100000
+        help
+            SCL clock frequency in Hz. The SHT31 supports up to 1 MHz (fast mode plus).
+
+    config SHT31_I2C_ADDR
+        hex "I2C device address (7-bit)"
+        range 0x44 0x45
+        default 0x44
+        help
+            7-bit I2C address of the SHT31. 0x44 when the ADDR pin is tied low,
+            0x45 when it is tied high.
+
+    config SHT31_I2C_ENABLE_PULLUP
+        bool "Enable internal pull-ups on SDA/SCL"
+        default y
+        help
+            Enable the ESP32 internal pull-up resistors on the I2C lines.
+            Disable this if you use external pull-up resistors.
+
+endmenu

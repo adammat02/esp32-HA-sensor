@@ -1,5 +1,6 @@
 #include "mqtt_manager.h"
 
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -163,8 +164,9 @@ esp_err_t mqtt_manager_publish_data(const mqtt_measurement_t *measurements, size
     }
 
     for (size_t i = 0; i < count; i++) {
+        double rounded = round(measurements[i].value * 100.0) / 100.0;
         cJSON_AddNumberToObject(doc, measurements[i].sensor->device_class,
-                                measurements[i].value);
+                                rounded);
     }
 
     char *payload = cJSON_PrintUnformatted(doc);
