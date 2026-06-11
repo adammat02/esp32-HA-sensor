@@ -1,13 +1,50 @@
 #include <stdio.h>
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include "esp_event.h"
 #include "esp_log.h"
 #include "esp_netif.h"
 #include "nvs_flash.h"
 
 #include "wifi_manager.h"
+#include "mqtt_manager.h"
 
 static const char *TAG = "main";
+
+#define PUBLISH_INTERVAL_MS 10000
+
+/* Defined as a macro so the same literal can initialize both the standalone
+   `dev` and each sensor's `.dev` field — in C a static `const` variable is not a
+   constant expression, so `.dev = dev` would not compile. */
+#define DEVICE_DEF {                  \
+    .device_id = "esp32_02",          \
+    .name = "ESP32_02",               \
+    .model = "ESP32-WROOM",           \
+    .manufacturer = "Espressif",      \
+}
+
+static const mqtt_device_t dev = DEVICE_DEF;
+
+static const mqtt_sensor_t temp_sensor = {
+    .name = "Temperatura",
+    .unique_id = "esp32_02_temp",
+    .state_topic = "home/esp32_02/state",
+    .unit_of_measurement = "°C",
+    .device_class = "temperature",
+    .state_class = "measurement",
+    .dev = DEVICE_DEF,
+};
+
+static const mqtt_sensor_t hum_sensor = {
+    .name = "Wilgotność",
+    .unique_id = "esp32_02_hum",
+    .state_topic = "home/esp32_02/state",
+    .unit_of_measurement = "%",
+    .device_class = "humidity",
+    .state_class = "measurement",
+    .dev = DEVICE_DEF,
+};
 
 void app_main(void)
 {
@@ -25,9 +62,32 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
-    if (wifi_manager_connect() == ESP_OK) {
-        ESP_LOGI(TAG, "Wi-Fi up and running");
-    } else {
+    if (wifi_manager_connect() != ESP_OK) {
         ESP_LOGE(TAG, "Wi-Fi connection failed");
+        return;
+    }
+    ESP_LOGI(TAG, "Wi-Fi up and running");
+
+    if (mqtt_manager_init(&dev) != ESP_OK) {
+        ESP_LOGE(TAG, "MQTT connection failed");
+        return;
+    }
+
+    /* Publish Home Assistant discovery config once at startup. */
+    mqtt_manager_publish_config(&temp_sensor);
+    mqtt_manager_publish_config(&hum_sensor);
+
+    while (true) {
+        /* TODO: odczyt z DHT11 — na razie hardkodowane wartości. */
+        float temp = 23.5f;
+        float hum = 50.0f;
+
+        mqtt_measurement_t measurements[] = {
+            { &temp_sensor, temp },
+            { &hum_sensor, hum },
+        };
+        mqtt_manager_publish_data(measurements, 2);
+
+        vTaskDelay(pdMS_TO_TICKS(PUBLISH_INTERVAL_MS));
     }
 }

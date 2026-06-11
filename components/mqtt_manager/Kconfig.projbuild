@@ -1,0 +1,27 @@
+menu "MQTT Manager Configuration"
+
+    config MQTT_HOST
+        string "MQTT broker host"
+        default "192.168.1.10"
+        help
+            Hostname or IP address of the MQTT broker to connect to.
+
+    config MQTT_PORT
+        int "MQTT broker port"
+        default 1883
+        help
+            TCP port of the MQTT broker.
+
+    config MQTT_USERNAME
+        string "MQTT username"
+        default "username"
+        help
+            Username for MQTT authentication. Leave empty if not required.
+
+    config MQTT_PASSWORD
+        string "MQTT password"
+        default "password"
+        help
+            Password for MQTT authentication. Leave empty if not required.
+
+endmenu
