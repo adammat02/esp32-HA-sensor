@@ -1,6 +1,8 @@
 #include <stdio.h>
 
+#include "esp_event.h"
 #include "esp_log.h"
+#include "esp_netif.h"
 #include "nvs_flash.h"
 
 #include "wifi_manager.h"
@@ -16,6 +18,12 @@ void app_main(void)
         ret = nvs_flash_init();
     }
     ESP_ERROR_CHECK(ret);
+
+    /* System-wide networking bootstrap: the TCP/IP stack and the shared default
+       event loop. These are not Wi-Fi specific, so they live here rather than in
+       the wifi_manager component. */
+    ESP_ERROR_CHECK(esp_netif_init());
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
 
     if (wifi_manager_connect() == ESP_OK) {
         ESP_LOGI(TAG, "Wi-Fi up and running");
