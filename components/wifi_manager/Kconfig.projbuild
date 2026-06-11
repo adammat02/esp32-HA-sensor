@@ -1,0 +1,22 @@
+menu "WiFi Manager Configuration"
+
+    config WIFI_SSID
+        string "WiFi SSID"
+        default "myssid"
+        help
+            SSID (network name) for the device to connect to.
+
+    config WIFI_PASSWORD
+        string "WiFi Password"
+        default "mypassword"
+        help
+            WiFi password (WPA or WPA2) for the device to use.
+            Leave empty for an open network.
+
+    config WIFI_MAXIMUM_RETRY
+        int "Maximum connection retries"
+        default 10
+        help
+            Number of times to retry connecting to the AP before giving up.
+
+endmenu
